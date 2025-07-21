@@ -78,13 +78,27 @@ public class login {
             String username = textField.getText().trim();
             String password = new String(textField_1.getPassword()).trim();
 
+            // FIXED: Enhanced input validation
             if (username.isEmpty() || password.isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "Please enter both username and password.", "Login Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            
+            // ADDED: Basic security validation
+            if (username.length() > 50 || password.length() > 255) {
+                JOptionPane.showMessageDialog(frame, "Username or password too long.", "Login Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // ADDED: Check for potentially malicious characters
+            if (username.contains("<") || username.contains(">") || username.contains("'") || username.contains("\"")) {
+                JOptionPane.showMessageDialog(frame, "Invalid characters in username.", "Login Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
             try {
-                System.out.println("Sending login request -> Username: " + username + ", Password: " + password);
+                // FIXED: Never log passwords!
+                System.out.println("Sending login request -> Username: " + username + " [password hidden]");
 
                 JSONObject response = ApiClient.login(username, password);
                 System.out.println("Login response: " + response);

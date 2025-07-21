@@ -112,13 +112,43 @@ public class register {
             String confirmPassword = txtConfirmPassword.getText().trim();
             String phone = txtPhone.getText().trim();
 
+            // FIXED: Enhanced validation
             if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "Please fill in all required fields.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // ADDED: Username validation
+            if (username.length() < 3 || username.length() > 50) {
+                JOptionPane.showMessageDialog(frame, "Username must be between 3 and 50 characters.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // ADDED: Email format validation
+            if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                JOptionPane.showMessageDialog(frame, "Please enter a valid email address.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // ADDED: Strong password validation
+            if (password.length() < 8) {
+                JOptionPane.showMessageDialog(frame, "Password must be at least 8 characters long.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            if (!password.matches(".*[A-Z].*") || !password.matches(".*[a-z].*") || !password.matches(".*[0-9].*")) {
+                JOptionPane.showMessageDialog(frame, "Password must contain at least one uppercase letter, one lowercase letter, and one number.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             if (!password.equals(confirmPassword)) {
                 JOptionPane.showMessageDialog(frame, "Passwords do not match.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // ADDED: Phone validation (if provided)
+            if (!phone.isEmpty() && !phone.matches("^[0-9+\\-\\s]+$")) {
+                JOptionPane.showMessageDialog(frame, "Please enter a valid phone number.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
