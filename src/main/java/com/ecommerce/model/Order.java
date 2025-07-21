@@ -1,12 +1,19 @@
 package com.ecommerce.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "orders")
 public class Order {
+    
+    public enum OrderStatus {
+        PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
+    }
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,22 +21,35 @@ public class Order {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @NotNull(message = "User is required")
     private User user;
     
-    // BUG 4: Using float for monetary values instead of BigDecimal
-    @Column(nullable = false)
-    private float totalAmount;
+    // FIXED BUG 4: Using BigDecimal for monetary values
+    @Column(nullable = false, precision = 19, scale = 2)
+    @NotNull(message = "Total amount is required")
+    @DecimalMin(value = "0.0", inclusive = false, message = "Total amount must be positive")
+    private BigDecimal totalAmount;
     
+    // FIXED BUG 5: Added validation on status values using enum
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    @NotNull(message = "Status is required")
+    private OrderStatus status;
     
     @Column(name = "created_at")
-    private Date createdAt;
-    
-    // BUG 5: No validation on status values
+    private LocalDateTime createdAt;
     
     // Default constructor
-    public Order() {}
+    public Order() {
+        this.createdAt = LocalDateTime.now();
+        this.status = OrderStatus.PENDING;
+    }
+    
+    public Order(User user, BigDecimal totalAmount) {
+        this();
+        this.user = user;
+        this.totalAmount = totalAmount;
+    }
     
     // Getters and Setters
     public Long getId() {
@@ -48,27 +68,50 @@ public class Order {
         this.user = user;
     }
     
-    public float getTotalAmount() {
+    public BigDecimal getTotalAmount() {
         return totalAmount;
     }
     
-    public void setTotalAmount(float totalAmount) {
+    public void setTotalAmount(BigDecimal totalAmount) {
         this.totalAmount = totalAmount;
     }
     
-    public String getStatus() {
+    public OrderStatus getStatus() {
         return status;
     }
     
-    public void setStatus(String status) {
+    public void setStatus(OrderStatus status) {
         this.status = status;
     }
     
-    public Date getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
     
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Order order = (Order) o;
+        return Objects.equals(id, order.id);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+    
+    @Override
+    public String toString() {
+        return "Order{" +
+                "id=" + id +
+                ", totalAmount=" + totalAmount +
+                ", status=" + status +
+                ", createdAt=" + createdAt +
+                '}';
     }
 }
