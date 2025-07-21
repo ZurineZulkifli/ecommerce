@@ -8,14 +8,18 @@ import org.json.JSONObject;
 
 public class ApiClient {
     private String token;
-
+    
+    // FIXED: Configurable base URL instead of hardcoded localhost
+    private static final String BASE_URL = System.getProperty("api.base.url", "http://localhost/ecommerce-api");
+    
     public ApiClient(String token) {
         this.token = token;
     }
 
     public static JSONObject login(String username, String password) {
         try {
-            URL url = new URL("http://localhost/ecommerce-api/api/login.php");
+            // FIXED: Use configurable URL
+            URL url = new URL(BASE_URL + "/api/login.php");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
@@ -62,7 +66,8 @@ public class ApiClient {
 
     public static JSONObject register(String username, String email, String password, String phone) {
         try {
-            URL url = new URL("http://localhost/ecommerce-api/api/users/register.php");
+            // FIXED: Use configurable URL
+            URL url = new URL(BASE_URL + "/api/users/register.php");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
@@ -104,7 +109,8 @@ public class ApiClient {
     }
 
     public JSONArray getProducts() throws IOException {
-        URL url = new URL("http://localhost/ecommerce-api/api/products/index.php");
+        // FIXED: Use configurable URL
+        URL url = new URL(BASE_URL + "/api/products/index.php");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Authorization", "Bearer " + token);
@@ -132,7 +138,8 @@ public class ApiClient {
     }
 
     public JSONObject createOrder(JSONObject orderData) throws IOException {
-        URL url = new URL("http://localhost/ecommerce-api/api/orders/index.php");
+        // FIXED: Use configurable URL
+        URL url = new URL(BASE_URL + "/api/orders/index.php");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
@@ -161,7 +168,8 @@ public class ApiClient {
     }
     
 public JSONObject updatePaymentStatus(String orderId, String paymentMethod) throws IOException {
-    String urlString = "http://localhost/ecommerce-api/api/orders/" + orderId;
+    // FIXED: Use configurable URL
+    String urlString = BASE_URL + "/api/orders/" + orderId;
     URL url = new URL(urlString);
     
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
