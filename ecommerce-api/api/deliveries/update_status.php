@@ -1,6 +1,6 @@
 <?php
-require_once '../../config/database.php';
-require_once '../../auth/verify_token.php';
+require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../config/jwt.php';
 
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
@@ -16,6 +16,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Handle PATCH override
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE']) && $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] === 'PATCH') {
     $_SERVER['REQUEST_METHOD'] = 'PATCH';
+}
+
+// Validate JWT
+$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+$token = str_replace('Bearer ', '', $authHeader);
+$userData = validateJWT($token);
+
+if (!$userData) {
+    http_response_code(401);
+    echo json_encode(["success" => false, "message" => "Unauthorized"]);
+    exit;
+}
+
+// Only allow delivery role
+if ($userData['role'] !== 'delivery') {
+    http_response_code(403);
+    echo json_encode(["success" => false, "message" => "Forbidden - Delivery only"]);
+    exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'PATCH') {
@@ -34,9 +52,32 @@ if (!$delivery_id || !$status) {
     exit;
 }
 
-// Execute update
-$stmt = $pdo->prepare("UPDATE deliveries SET status = ?, delivery_date = NOW() WHERE delivery_id = ?");
-$success = $stmt->execute([$status, $delivery_id]);
+try {
+    // Verify delivery belongs to current user
+    $stmt = $pdo->prepare("SELECT order_id FROM deliveries WHERE delivery_id = ? AND delivery_user_id = ?");
+    $stmt->execute([$delivery_id, $userData['userId']]);
+    $order_id = $stmt->fetchColumn();
 
-echo json_encode(['success' => $success, 'message' => $success ? 'Updated' : 'Failed']);
+    if (!$order_id) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Access denied']);
+        exit;
+    }
+
+    // Update delivery status
+    $delivery_date = ($status === 'delivered') ? date('Y-m-d H:i:s') : null;
+    $stmt = $pdo->prepare("UPDATE deliveries SET status = ?, delivery_date = ? WHERE delivery_id = ?");
+    $success = $stmt->execute([$status, $delivery_date, $delivery_id]);
+
+    // Also update order status if delivered
+    if ($status === 'delivered') {
+        $stmt = $pdo->prepare("UPDATE orders SET status = 'delivered' WHERE order_id = ?");
+        $stmt->execute([$order_id]);
+    }
+
+    echo json_encode(['success' => $success, 'message' => $success ? 'Delivery status updated' : 'Failed to update']);
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'DB Error: ' . $e->getMessage()]);
+}
 ?>
