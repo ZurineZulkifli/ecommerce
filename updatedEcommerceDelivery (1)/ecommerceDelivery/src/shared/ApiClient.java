@@ -232,4 +232,46 @@ public JSONObject updatePaymentStatus(String orderId, String paymentMethod) thro
     }
 }
 
+public JSONArray getDeliveriesForUser(int userId) throws IOException {
+    URL url = new URL("http://localhost/ecommerce-api/api/deliveries/fetch_by_user.php?user_id=" + userId);
+    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    conn.setRequestMethod("GET");
+    conn.setRequestProperty("Authorization", "Bearer " + token);
+
+    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+    StringBuilder sb = new StringBuilder();
+    String line;
+    while ((line = br.readLine()) != null) sb.append(line);
+    br.close();
+
+    JSONObject res = new JSONObject(sb.toString());
+    return res.getJSONArray("data");
+}
+
+public JSONObject updateDeliveryStatus(int deliveryId, String status) throws IOException {
+    URL url = new URL("http://localhost/ecommerce-api/api/deliveries/update_status.php");
+    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    conn.setRequestMethod("POST");
+    conn.setRequestProperty("Authorization", "Bearer " + token);
+    conn.setRequestProperty("Content-Type", "application/json");
+    conn.setDoOutput(true);
+
+    JSONObject payload = new JSONObject();
+    payload.put("delivery_id", deliveryId);
+    payload.put("status", status);
+
+    try (OutputStream os = conn.getOutputStream()) {
+        os.write(payload.toString().getBytes("utf-8"));
+    }
+
+    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+    StringBuilder sb = new StringBuilder();
+    String line;
+    while ((line = br.readLine()) != null) sb.append(line);
+    br.close();
+
+    return new JSONObject(sb.toString());
+}
+
+
 }
