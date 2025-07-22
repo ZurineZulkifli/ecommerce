@@ -99,8 +99,8 @@ INSERT INTO `orders` (`order_id`, `user_id`, `total_amount`, `status`, `created_
 (33, 5, 90.00, 'pending', '2025-07-21 05:31:26', NULL, NULL, 'Dummy Street #33'),
 (38, 5, 135.00, 'pending', '2025-07-21 11:48:27', NULL, NULL, 'Dummy Street #38'),
 (42, 9, 59.90, 'pending', '2025-07-22 05:19:40', 'Cash', NULL, '456 Delivery Street'),
-(1001, 14, 2999.00, '', '2025-07-22 06:29:32', 'Credit Card', NULL, '12 Jalan Bukit, Melaka'),
-(1002, 14, 2298.00, '', '2025-07-22 06:29:32', 'COD', NULL, '45 Lorong Mawar, KL');
+(1001, 14, 2999.00, 'Paid', '2025-07-22 06:29:32', 'Credit Card', NULL, '12 Jalan Bukit, Melaka'),
+(1002, 14, 2298.00, 'Paid', '2025-07-22 06:29:32', 'COD', NULL, '45 Lorong Mawar, KL');
 
 -- --------------------------------------------------------
 

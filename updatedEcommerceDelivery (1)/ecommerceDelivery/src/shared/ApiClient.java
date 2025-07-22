@@ -161,7 +161,7 @@ public class ApiClient {
     }
     
 public JSONObject updatePaymentStatus(String orderId, String paymentMethod) throws IOException {
-    String urlString = "http://localhost/ecommerce-api/api/orders/" + orderId;
+    String urlString = "http://localhost/ecommerce-api/api/orders/pay.php?id=" + orderId;
     URL url = new URL(urlString);
     
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
